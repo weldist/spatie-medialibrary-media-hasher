@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Exceptions\MediaFileNotFound;
 use Weldist\Spatie\MediaLibrary\MediaHasher\MediaHasher;
 
 class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
@@ -59,8 +60,12 @@ class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
             return;
         }
 
-        $this->verify
-            ? $hasher->verify($media, $this->hashers)
-            : $hasher->hash($media, $this->hashers, $this->force);
+        try {
+            $this->verify
+                ? $hasher->verify($media, $this->hashers)
+                : $hasher->hash($media, $this->hashers, $this->force);
+        } catch (MediaFileNotFound $e) {
+            report($e);
+        }
     }
 }

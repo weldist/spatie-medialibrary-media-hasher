@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Feature;
 
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\Test;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Exceptions\MediaFileNotFound;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Jobs\HashMediaJob;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Concerns\CreatesMedia;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Support\TestMedia;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Tests\TestCase;
 
 class HashMediaJobTest extends TestCase
@@ -62,11 +66,44 @@ class HashMediaJobTest extends TestCase
     }
 
     #[Test]
+    public function a_missing_file_is_reported_without_failing_the_job(): void
+    {
+        Exceptions::fake();
+        $media = $this->mediaWithMissingFile();
+
+        dispatch_sync(new HashMediaJob($media->id));
+
+        Exceptions::assertReported(fn (MediaFileNotFound $e) => str_contains($e->getMessage(), "media #{$media->id}"));
+        $this->assertSame([], $media->fresh()->getHashes());
+    }
+
+    #[Test]
+    public function the_generate_command_counts_a_missing_file_as_failed(): void
+    {
+        $this->mediaWithMissingFile();
+
+        $this->artisan('media-library:hash:generate')
+            ->expectsTable(['Status', 'Count'], [['Hashed', 0], ['Skipped', 0], ['Failed', 1]])
+            ->assertFailed();
+    }
+
+    #[Test]
     public function the_unique_id_ignores_the_order_of_the_hashers(): void
     {
         $this->assertSame(
             (new HashMediaJob(7, ['sha256', 'perceptual']))->uniqueId(),
             (new HashMediaJob(7, ['perceptual', 'sha256']))->uniqueId(),
         );
+    }
+
+    private function mediaWithMissingFile(): TestMedia
+    {
+        config(['media-hasher.collections' => []]);
+        $media = $this->addMedia($this->makeImageFile());
+        config(['media-hasher.collections' => ['*']]);
+
+        Storage::disk($media->disk)->delete($media->getPathRelativeToRoot());
+
+        return $media;
     }
 }

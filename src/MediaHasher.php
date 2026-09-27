@@ -8,12 +8,14 @@ use Closure;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Contracts\Hasher;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Events\MediaHashed;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Events\MediaHashesRemoved;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Events\MediaHashing;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Exceptions\MediaFileNotFound;
 
 class MediaHasher
 {
@@ -174,6 +176,10 @@ class MediaHasher
 
     private function copyToTemporaryFile(Media $media): string
     {
+        if (! Storage::disk($media->disk)->exists($media->getPathRelativeToRoot())) {
+            throw MediaFileNotFound::for($media);
+        }
+
         $path = tempnam(sys_get_temp_dir(), 'media-hasher-');
         $target = fopen($path, 'wb');
         $source = $media->stream();
