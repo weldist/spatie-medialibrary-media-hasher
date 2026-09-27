@@ -38,6 +38,30 @@ class HashMediaJobTest extends TestCase
     }
 
     #[Test]
+    public function it_takes_the_retry_settings_from_the_config(): void
+    {
+        config(['media-hasher.queue.tries' => 5, 'media-hasher.queue.backoff' => [1, 2], 'media-hasher.queue.timeout' => 30]);
+
+        $job = new HashMediaJob(1);
+
+        $this->assertSame(5, $job->tries);
+        $this->assertSame([1, 2], $job->backoff);
+        $this->assertSame(30, $job->timeout);
+    }
+
+    #[Test]
+    public function null_retry_settings_fall_back_to_the_worker_defaults(): void
+    {
+        config(['media-hasher.queue.tries' => null, 'media-hasher.queue.backoff' => null, 'media-hasher.queue.timeout' => null]);
+
+        $job = new HashMediaJob(1);
+
+        $this->assertNull($job->tries);
+        $this->assertNull($job->backoff);
+        $this->assertNull($job->timeout);
+    }
+
+    #[Test]
     public function the_unique_id_ignores_the_order_of_the_hashers(): void
     {
         $this->assertSame(

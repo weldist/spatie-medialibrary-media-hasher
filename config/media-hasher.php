@@ -36,12 +36,16 @@ return [
     'collections' => ['*'],
 
     /*
-     * The queue connection and name the hashing job is dispatched on.
-     * Null uses the application defaults.
+     * The queue the hashing job is dispatched on and how it is retried.
+     * Null uses the application or worker defaults. The timeout (seconds) must
+     * stay below the retry_after value of the queue connection.
      */
     'queue' => [
         'connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
         'name' => env('MEDIA_HASHER_QUEUE'),
+        'tries' => 3,
+        'backoff' => [10, 60, 300],
+        'timeout' => 120,
     ],
 
 ];

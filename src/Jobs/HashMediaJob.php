@@ -18,6 +18,13 @@ class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
     use InteractsWithQueue;
     use Queueable;
 
+    public ?int $tries;
+
+    /** @var int|list<int>|null */
+    public int|array|null $backoff;
+
+    public ?int $timeout;
+
     /**
      * @param  list<string>  $hashers
      */
@@ -29,6 +36,10 @@ class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
     ) {
         $this->onConnection(config('media-hasher.queue.connection'));
         $this->onQueue(config('media-hasher.queue.name'));
+
+        $this->tries = config('media-hasher.queue.tries');
+        $this->backoff = config('media-hasher.queue.backoff');
+        $this->timeout = config('media-hasher.queue.timeout');
     }
 
     public function uniqueId(): string

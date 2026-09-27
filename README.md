@@ -71,6 +71,9 @@ return [
     'queue' => [
         'connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
         'name' => env('MEDIA_HASHER_QUEUE'),
+        'tries' => 3,
+        'backoff' => [10, 60, 300],
+        'timeout' => 120,
     ],
 ];
 ```
@@ -82,6 +85,7 @@ return [
 | `hash_on_add` | Hash files automatically when they are added. When `false`, only the command hashes. |
 | `collections` | Collections hashed automatically. `['*']` hashes every collection, an empty array hashes none. |
 | `queue.connection`, `queue.name` | Where `HashMediaJob` is dispatched. `null` uses the application defaults. |
+| `queue.tries`, `queue.backoff`, `queue.timeout` | Retry attempts, seconds between retries (an integer or one value per retry) and seconds a run may take. `null` uses the worker defaults. Keep the timeout below the connection's `retry_after`. |
 
 `HashMediaJob` is unique per media and options until it starts processing, so the listener and `media-library:hash:generate --queue` do not queue the same work twice. Unique jobs need a cache store that supports locks.
 
