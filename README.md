@@ -83,6 +83,8 @@ return [
 | `collections` | Collections hashed automatically. `['*']` hashes every collection, an empty array hashes none. |
 | `queue.connection`, `queue.name` | Where `HashMediaJob` is dispatched. `null` uses the application defaults. |
 
+`HashMediaJob` is unique per media and options until it starts processing, so the listener and `media-library:hash:generate --queue` do not queue the same work twice. Unique jobs need a cache store that supports locks.
+
 ## Built-in Hashers
 
 | Class | Supports | Value |

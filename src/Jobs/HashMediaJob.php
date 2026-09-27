@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Weldist\Spatie\MediaLibrary\MediaHasher\Jobs;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Weldist\Spatie\MediaLibrary\MediaHasher\MediaHasher;
 
-class HashMediaJob implements ShouldQueue
+class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
 {
     use Dispatchable;
     use InteractsWithQueue;
@@ -28,6 +29,14 @@ class HashMediaJob implements ShouldQueue
     ) {
         $this->onConnection(config('media-hasher.queue.connection'));
         $this->onQueue(config('media-hasher.queue.name'));
+    }
+
+    public function uniqueId(): string
+    {
+        $hashers = $this->hashers;
+        sort($hashers);
+
+        return implode(':', [$this->mediaId, implode(',', $hashers), (int) $this->force, (int) $this->verify]);
     }
 
     public function handle(MediaHasher $hasher): void
