@@ -51,10 +51,17 @@ class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
         return implode(':', [$this->mediaId, implode(',', $hashers), (int) $this->force, (int) $this->verify]);
     }
 
+    /**
+     * @return list<string>
+     */
+    public function tags(): array
+    {
+        return [$this->mediaModel().':'.$this->mediaId];
+    }
+
     public function handle(MediaHasher $hasher): void
     {
-        $mediaModel = config('media-library.media_model', Media::class);
-        $media = $mediaModel::find($this->mediaId);
+        $media = $this->mediaModel()::find($this->mediaId);
 
         if ($media === null) {
             return;
@@ -67,5 +74,13 @@ class HashMediaJob implements ShouldBeUniqueUntilProcessing, ShouldQueue
         } catch (MediaFileNotFound $e) {
             report($e);
         }
+    }
+
+    /**
+     * @return class-string<Media>
+     */
+    private function mediaModel(): string
+    {
+        return config('media-library.media_model', Media::class);
     }
 }

@@ -96,6 +96,12 @@ class HashMediaJobTest extends TestCase
         );
     }
 
+    #[Test]
+    public function it_is_tagged_with_the_media_model_and_id(): void
+    {
+        $this->assertSame([TestMedia::class.':7'], (new HashMediaJob(7))->tags());
+    }
+
     private function mediaWithMissingFile(): TestMedia
     {
         config(['media-hasher.collections' => []]);

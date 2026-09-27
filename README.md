@@ -89,6 +89,8 @@ return [
 
 `HashMediaJob` is unique per media and options until it starts processing, so the listener and `media-library:hash:generate --queue` do not queue the same work twice. Unique jobs need a cache store that supports locks.
 
+The job is tagged with the media model and id (e.g. `App\Models\Media:42`), the same format Horizon uses for jobs that receive the model itself, so the jobs of a media can be searched in the Horizon dashboard.
+
 When the file of a media no longer exists on its disk, `MediaHasher` throws `Exceptions\MediaFileNotFound`. The job reports it through the exception handler and finishes without retrying; the `generate` command counts the media as failed.
 
 ## Built-in Hashers
