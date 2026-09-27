@@ -1,0 +1,49 @@
+{
+    "name": "weldist/spatie-medialibrary-media-hasher",
+    "description": "Computes one or more hashes (checksum, perceptual) of every file added to spatie/laravel-medialibrary and stores them in the media custom properties.",
+    "keywords": ["laravel", "spatie", "medialibrary", "hash", "checksum", "perceptual-hash", "dhash"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "X-Adam",
+            "email": "www@mehmetogmen.com.tr",
+            "homepage": "https://mehmetogmen.com.tr"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^12.0|^13.0",
+        "spatie/laravel-medialibrary": "^11.0|^12.0"
+    },
+    "require-dev": {
+        "ext-gd": "*",
+        "ext-imagick": "*",
+        "orchestra/testbench": "^10.0|^11.0",
+        "phpunit/phpunit": "^11.0|^12.0"
+    },
+    "suggest": {
+        "ext-imagick": "Required by PerceptualHasher."
+    },
+    "autoload": {
+        "psr-4": {
+            "Weldist\\Spatie\\MediaLibrary\\MediaHasher\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Weldist\\Spatie\\MediaLibrary\\MediaHasher\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Weldist\\Spatie\\MediaLibrary\\MediaHasher\\MediaHasherServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
