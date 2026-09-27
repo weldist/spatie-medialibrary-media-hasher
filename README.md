@@ -66,7 +66,7 @@ return [
 
     'hash_on_add' => true,
 
-    'collections' => [],
+    'collections' => ['*'],
 
     'queue_connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
 
@@ -79,7 +79,7 @@ return [
 | `property` | Custom property the hashes are stored under. |
 | `hashers` | Hashers to run, keyed by the name their value is stored under. |
 | `hash_on_add` | Hash files automatically when they are added. When `false`, only the command hashes. |
-| `collections` | Limit automatic hashing to these collections. Empty means all. |
+| `collections` | Collections hashed automatically. `['*']` hashes every collection, an empty array hashes none. |
 | `queue_connection`, `queue_name` | Where `HashMediaJob` is dispatched. `null` uses the application defaults. |
 
 ## Built-in Hashers

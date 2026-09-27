@@ -13,7 +13,7 @@ class QueueAddedMediaHashing
     {
         $collections = config('media-hasher.collections', []);
 
-        if ($collections !== [] && ! in_array($event->media->collection_name, $collections, true)) {
+        if (! in_array('*', $collections, true) && ! in_array($event->media->collection_name, $collections, true)) {
             return;
         }
 

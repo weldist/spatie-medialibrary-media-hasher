@@ -137,11 +137,11 @@ class MediaHasherTest extends TestCase
 
     private function addMediaWithoutHashes(string $path): TestMedia
     {
-        config(['media-hasher.collections' => ['none']]);
+        config(['media-hasher.collections' => []]);
 
         $media = $this->addMedia($path);
 
-        config(['media-hasher.collections' => []]);
+        config(['media-hasher.collections' => ['*']]);
 
         return $media->refresh();
     }

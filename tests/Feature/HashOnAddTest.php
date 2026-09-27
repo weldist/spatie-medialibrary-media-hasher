@@ -62,6 +62,27 @@ class HashOnAddTest extends TestCase
     }
 
     #[Test]
+    public function it_hashes_every_collection_with_the_wildcard(): void
+    {
+        config(['media-hasher.collections' => ['avatars', '*']]);
+
+        $media = $this->addMedia($this->makeImageFile(), 'documents')->refresh();
+
+        $this->assertNotNull($media->getHash('sha256'));
+    }
+
+    #[Test]
+    public function it_hashes_no_collection_when_the_list_is_empty(): void
+    {
+        Queue::fake();
+        config(['media-hasher.collections' => []]);
+
+        $this->addMedia($this->makeImageFile());
+
+        Queue::assertNothingPushed();
+    }
+
+    #[Test]
     #[DefineEnvironment('disableHashOnAdd')]
     public function it_does_not_hash_on_add_when_disabled(): void
     {

@@ -30,9 +30,10 @@ return [
     'hash_on_add' => true,
 
     /*
-     * Limit automatic hashing to these collection names. Leave empty for all collections.
+     * The collection names hashed automatically. Use '*' for every collection;
+     * an empty array hashes none.
      */
-    'collections' => [],
+    'collections' => ['*'],
 
     /*
      * The queue connection and name the hashing job is dispatched on.
