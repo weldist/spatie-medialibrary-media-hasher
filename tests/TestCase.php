@@ -27,12 +27,7 @@ abstract class TestCase extends BaseTestCase
     protected function defineEnvironment($app): void
     {
         $app['config']->set('database.default', 'testing');
-        $app['config']->set('database.connections.testing', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-            'foreign_key_constraints' => true,
-        ]);
+        $app['config']->set('database.connections.testing', $this->databaseConnection((string) env('DB_DRIVER', 'sqlite')));
 
         $app['config']->set('filesystems.disks.media', ['driver' => 'local', 'root' => sys_get_temp_dir().'/media-hasher-tests']);
         $app['config']->set('media-library.disk_name', 'media');
@@ -60,5 +55,20 @@ abstract class TestCase extends BaseTestCase
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__.'/Migrations');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function databaseConnection(string $driver): array
+    {
+        $server = ['database' => 'testing', 'password' => 'secret', 'prefix' => ''];
+
+        return match ($driver) {
+            'mysql' => [...$server, 'driver' => 'mysql', 'host' => 'mysql', 'port' => 3306, 'username' => 'root', 'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci'],
+            'mariadb' => [...$server, 'driver' => 'mariadb', 'host' => 'mariadb', 'port' => 3306, 'username' => 'root', 'charset' => 'utf8mb4', 'collation' => 'utf8mb4_unicode_ci'],
+            'pgsql' => [...$server, 'driver' => 'pgsql', 'host' => 'postgres', 'port' => 5432, 'username' => 'postgres', 'charset' => 'utf8', 'schema' => 'public'],
+            default => ['driver' => 'sqlite', 'database' => ':memory:', 'prefix' => '', 'foreign_key_constraints' => true],
+        };
     }
 }

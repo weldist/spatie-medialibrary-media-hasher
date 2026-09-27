@@ -34,4 +34,10 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('test_models');
+        Schema::dropIfExists('media');
+    }
 };

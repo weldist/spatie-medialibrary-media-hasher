@@ -212,7 +212,7 @@ Removing hashes (see the `clean` and `clear` commands, or `MediaHasher::forget()
 
 Hashes are written with a single JSON-path update of the hash property. Other custom properties are never rewritten, so a concurrent `setCustomProperty()->save()` elsewhere cannot be lost, and vice versa. As a consequence the regular `saving` / `updated` model events (and anything built on them, such as activity logs) are not fired for this write; use the hash events instead. The in-memory model passed to the events already contains the change and is not left dirty.
 
-The write is covered by the test suite on SQLite and verified on MySQL 8.4. MariaDB, PostgreSQL and SQL Server have their own JSON expressions but are not part of the test suite yet.
+The test suite runs on SQLite, MySQL 8.4, MariaDB 11.4 and PostgreSQL 17. SQL Server has its own JSON expression but is not part of the test suite.
 
 ## Commands
 
@@ -255,8 +255,14 @@ Not to be confused with media-library's own `media-library:clean`, which removes
 ## Testing
 
 ```bash
-docker compose --profile php84 up --build --abort-on-container-exit
-docker compose --profile php85 up --build --abort-on-container-exit
+docker compose --profile php84 up --build --abort-on-container-exit --exit-code-from php84
+docker compose --profile php85 up --build --abort-on-container-exit --exit-code-from php85
+```
+
+Each profile starts MySQL, MariaDB and PostgreSQL and runs the suite once per database, SQLite included. To run it on a single database:
+
+```bash
+docker compose --profile php84 run --rm --entrypoint "sh -c 'DB_DRIVER=pgsql vendor/bin/phpunit'" php84
 ```
 
 ## License
