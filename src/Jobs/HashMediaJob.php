@@ -26,8 +26,8 @@ class HashMediaJob implements ShouldQueue
         public readonly bool $force = false,
         public readonly bool $verify = false,
     ) {
-        $this->onConnection(config('media-hasher.queue_connection'));
-        $this->onQueue(config('media-hasher.queue_name'));
+        $this->onConnection(config('media-hasher.queue.connection'));
+        $this->onQueue(config('media-hasher.queue.name'));
     }
 
     public function handle(MediaHasher $hasher): void

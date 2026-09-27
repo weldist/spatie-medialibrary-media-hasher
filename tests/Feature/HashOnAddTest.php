@@ -40,7 +40,7 @@ class HashOnAddTest extends TestCase
     public function it_dispatches_the_job_on_the_configured_queue(): void
     {
         Queue::fake();
-        config(['media-hasher.queue_connection' => 'redis', 'media-hasher.queue_name' => 'hashing']);
+        config(['media-hasher.queue' => ['connection' => 'redis', 'name' => 'hashing']]);
 
         $media = $this->addMedia($this->makeImageFile());
 

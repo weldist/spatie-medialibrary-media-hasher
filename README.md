@@ -68,9 +68,10 @@ return [
 
     'collections' => ['*'],
 
-    'queue_connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
-
-    'queue_name' => env('MEDIA_HASHER_QUEUE'),
+    'queue' => [
+        'connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
+        'name' => env('MEDIA_HASHER_QUEUE'),
+    ],
 ];
 ```
 
@@ -80,7 +81,7 @@ return [
 | `hashers` | Hashers to run, keyed by the name their value is stored under. |
 | `hash_on_add` | Hash files automatically when they are added. When `false`, only the command hashes. |
 | `collections` | Collections hashed automatically. `['*']` hashes every collection, an empty array hashes none. |
-| `queue_connection`, `queue_name` | Where `HashMediaJob` is dispatched. `null` uses the application defaults. |
+| `queue.connection`, `queue.name` | Where `HashMediaJob` is dispatched. `null` uses the application defaults. |
 
 ## Built-in Hashers
 

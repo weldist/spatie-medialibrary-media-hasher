@@ -39,8 +39,9 @@ return [
      * The queue connection and name the hashing job is dispatched on.
      * Null uses the application defaults.
      */
-    'queue_connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
-
-    'queue_name' => env('MEDIA_HASHER_QUEUE'),
+    'queue' => [
+        'connection' => env('MEDIA_HASHER_QUEUE_CONNECTION'),
+        'name' => env('MEDIA_HASHER_QUEUE'),
+    ],
 
 ];
