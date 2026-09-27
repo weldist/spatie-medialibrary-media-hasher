@@ -6,7 +6,10 @@ namespace Weldist\Spatie\MediaLibrary\MediaHasher;
 
 use Illuminate\Support\ServiceProvider;
 use Spatie\MediaLibrary\MediaCollections\Events\MediaHasBeenAddedEvent;
-use Weldist\Spatie\MediaLibrary\MediaHasher\Console\HashMediaCommand;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Console\HashCleanCommand;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Console\HashClearCommand;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Console\HashGenerateCommand;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Console\HashStatusCommand;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Listeners\QueueAddedMediaHashing;
 
 class MediaHasherServiceProvider extends ServiceProvider
@@ -25,7 +28,12 @@ class MediaHasherServiceProvider extends ServiceProvider
                 __DIR__.'/../config/media-hasher.php' => config_path('media-hasher.php'),
             ], 'media-hasher-config');
 
-            $this->commands([HashMediaCommand::class]);
+            $this->commands([
+                HashStatusCommand::class,
+                HashGenerateCommand::class,
+                HashCleanCommand::class,
+                HashClearCommand::class,
+            ]);
         }
 
         if (config('media-hasher.hash_on_add', true)) {

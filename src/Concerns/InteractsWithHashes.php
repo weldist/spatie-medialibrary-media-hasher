@@ -8,14 +8,14 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Registers the "hashing" and "hashed" model events so observers can define
- * hashing() / hashed() methods, and adds hash accessors to the media model.
+ * Registers the "hashing", "hashed" and "hashesRemoved" model events so observers
+ * can define methods with those names, and adds hash accessors to the media model.
  */
 trait InteractsWithHashes
 {
     public function initializeInteractsWithHashes(): void
     {
-        $this->addObservableEvents(['hashing', 'hashed']);
+        $this->addObservableEvents(['hashing', 'hashed', 'hashesRemoved']);
     }
 
     public static function hashing(Closure|string|array $callback): void
@@ -26,6 +26,11 @@ trait InteractsWithHashes
     public static function hashed(Closure|string|array $callback): void
     {
         static::registerModelEvent('hashed', $callback);
+    }
+
+    public static function hashesRemoved(Closure|string|array $callback): void
+    {
+        static::registerModelEvent('hashesRemoved', $callback);
     }
 
     public function getHash(string $hasher): ?string

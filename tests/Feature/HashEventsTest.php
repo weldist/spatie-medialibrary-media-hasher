@@ -7,7 +7,9 @@ namespace Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Feature;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Events\MediaHashed;
+use Weldist\Spatie\MediaLibrary\MediaHasher\Events\MediaHashesRemoved;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Events\MediaHashing;
+use Weldist\Spatie\MediaLibrary\MediaHasher\MediaHasher;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Concerns\CreatesMedia;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Support\RecordingObserver;
 use Weldist\Spatie\MediaLibrary\MediaHasher\Tests\Support\TestMedia;
@@ -79,6 +81,23 @@ class HashEventsTest extends TestCase
 
         $this->assertSame([], $media->getHashes());
         $this->assertSame(["hashing:{$media->id}"], RecordingObserver::$calls);
+    }
+
+    #[Test]
+    public function removing_hashes_fires_the_removed_events(): void
+    {
+        $removed = [];
+        Event::listen(MediaHashesRemoved::class, function (MediaHashesRemoved $event) use (&$removed): void {
+            $removed[] = $event->hashers;
+        });
+        TestMedia::observe(RecordingObserver::class);
+        $media = $this->addMedia($this->makeImageFile());
+
+        app(MediaHasher::class)->forget($media->refresh(), ['perceptual']);
+        app(MediaHasher::class)->forget($media, ['perceptual']);
+
+        $this->assertSame([['perceptual']], $removed);
+        $this->assertSame(["hashing:{$media->id}", "hashed:{$media->id}", "hashesRemoved:{$media->id}"], RecordingObserver::$calls);
     }
 
     #[Test]

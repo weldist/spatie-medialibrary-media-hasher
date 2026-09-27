@@ -93,6 +93,31 @@ class MediaHasherTest extends TestCase
     }
 
     #[Test]
+    public function forgetting_keeps_custom_properties_written_by_others_in_the_meantime(): void
+    {
+        $media = $this->addMedia($this->makeImageFile())->refresh();
+
+        DB::table('media')->where('id', $media->id)->update([
+            'custom_properties' => json_encode(['caption' => 'written elsewhere', 'hash' => $media->getHashes()]),
+        ]);
+
+        $this->assertSame(['sha256', 'perceptual'], app(MediaHasher::class)->forget($media));
+
+        $fresh = $media->fresh();
+        $this->assertSame(['caption' => 'written elsewhere'], $fresh->custom_properties);
+        $this->assertFalse($media->hasCustomProperty('hash'));
+        $this->assertFalse($media->isDirty('custom_properties'));
+    }
+
+    #[Test]
+    public function verifying_stores_nothing_when_the_hashes_still_match(): void
+    {
+        $media = $this->addMedia($this->makeImageFile())->refresh();
+
+        $this->assertSame([], app(MediaHasher::class)->verify($media));
+    }
+
+    #[Test]
     public function it_rejects_hashers_that_do_not_implement_the_contract(): void
     {
         config(['media-hasher.hashers' => ['invalid' => stdClass::class]]);

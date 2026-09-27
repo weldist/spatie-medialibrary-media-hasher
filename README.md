@@ -30,8 +30,8 @@ $model->addMedia($file)->toMediaCollection('photos');
 - Listens to media-library's `MediaHasBeenAddedEvent` and dispatches a queued job; the request that added the file is not slowed down.
 - Runs any number of hashers side by side. Each one stores its value under its own name, and a hasher that does not support the file (e.g. a perceptual hash for a PDF) is simply skipped.
 - Writes only the hash property, inside a row-locked transaction, so other custom properties changed concurrently are kept.
-- Fires `hashing` / `hashed` events both as event classes and as Eloquent model events, so observers can hook in.
-- Ships an Artisan command to hash media that already exists.
+- Fires `hashing` / `hashed` / `hashesRemoved` events both as event classes and as Eloquent model events, so observers can hook in.
+- Ships Artisan commands to inspect, generate, verify and remove the hashes of media that already exists.
 
 ## Requirements
 
@@ -175,7 +175,7 @@ Event::listen(MediaHashed::class, function (MediaHashed $event) {
 
 ### Observers
 
-With the `InteractsWithHashes` trait on the media model, observers can define `hashing` and `hashed` methods, and closures can be registered statically:
+With the `InteractsWithHashes` trait on the media model, observers can define `hashing`, `hashed` and `hashesRemoved` methods, and closures can be registered statically:
 
 ```php
 class MediaObserver
@@ -194,29 +194,54 @@ class MediaObserver
 Media::observe(MediaObserver::class);
 
 Media::hashed(fn (Media $media) => /* … */);
+Media::hashesRemoved(fn (Media $media) => /* … */);
 ```
+
+Removing hashes (see the `clean` and `clear` commands, or `MediaHasher::forget()`) fires the `eloquent.hashesRemoved: {MediaModel}` model event and `Events\MediaHashesRemoved` (`$media`, `$hashers`) with the names of the removed hashes.
 
 ### Why the hashes are not saved with `save()`
 
-Hashes are written with a single JSON-path update of the hash property. Other custom properties are never rewritten, so a concurrent `setCustomProperty()->save()` elsewhere cannot be lost, and vice versa. As a consequence the regular `saving` / `updated` model events (and anything built on them, such as activity logs) are not fired for this write; use the `hashing` / `hashed` events instead. The in-memory model passed to the events already contains the new hashes and is not left dirty.
+Hashes are written with a single JSON-path update of the hash property. Other custom properties are never rewritten, so a concurrent `setCustomProperty()->save()` elsewhere cannot be lost, and vice versa. As a consequence the regular `saving` / `updated` model events (and anything built on them, such as activity logs) are not fired for this write; use the hash events instead. The in-memory model passed to the events already contains the change and is not left dirty.
 
-## Hashing Existing Media
+The write is covered by the test suite on SQLite and verified on MySQL 8.4. MariaDB, PostgreSQL and SQL Server have their own JSON expressions but are not part of the test suite yet.
 
-```bash
-php artisan media-library:hash
-```
+## Commands
+
+All commands accept the same filters:
 
 | Option | Meaning |
 |---|---|
-| `--hasher=*` | Only run these configured hashers. |
 | `--collection=*` | Only include these collections. |
 | `--model=*` | Only include media of these model classes. |
 | `--id-from=`, `--id-to=` | Limit by media id range. |
 | `--chunk=100` | Rows per database chunk. |
-| `--force` | Recompute hashes that are already stored. |
+
+### `media-library:hash:status`
+
+Read-only. Shows, per configured hasher, how many media have the hash stored, are missing it, or are not supported by the hasher, and lists stored hashes whose hasher is no longer configured.
+
+### `media-library:hash:generate`
+
+Computes and stores the missing hashes of existing media.
+
+| Option | Meaning |
+|---|---|
+| `--hasher=*` | Only run these configured hashers. |
+| `--force` | Recompute and store hashes that are already stored. |
+| `--verify` | Recompute every hash and store only the ones that are missing or no longer match the file, e.g. after the file was re-encoded in place. |
 | `--queue` | Dispatch a `HashMediaJob` per row instead of hashing synchronously. |
 
-Only missing hashes are computed unless `--force` is given, so adding a new hasher later and running the command fills in just that hasher.
+Only missing hashes are computed unless `--force` or `--verify` is given, so adding a new hasher later and running the command fills in just that hasher.
+
+### `media-library:hash:clean`
+
+Removes the stored hashes of hashers that are no longer configured. `--dry-run` shows what would be removed.
+
+### `media-library:hash:clear`
+
+Removes stored hashes whether their hasher is configured or not. Without options every hash is removed; `--hasher=*` limits it to the given names. Asks for confirmation unless `--force` is given.
+
+Not to be confused with media-library's own `media-library:clean`, which removes orphaned files and conversions.
 
 ## Testing
 

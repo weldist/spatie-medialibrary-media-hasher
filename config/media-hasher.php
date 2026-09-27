@@ -25,7 +25,7 @@ return [
 
     /*
      * Hash files automatically when they are added to the media library.
-     * When disabled, hashes are only computed by the media-library:hash command.
+     * When disabled, hashes are only computed by the media-library:hash:generate command.
      */
     'hash_on_add' => true,
 

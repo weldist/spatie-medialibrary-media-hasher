@@ -22,4 +22,9 @@ class RecordingObserver
     {
         self::$calls[] = "hashed:{$media->id}";
     }
+
+    public function hashesRemoved(TestMedia $media): void
+    {
+        self::$calls[] = "hashesRemoved:{$media->id}";
+    }
 }
